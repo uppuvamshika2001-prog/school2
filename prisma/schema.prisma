@@ -1,0 +1,267 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  SCHOOL_ADMIN
+  TEACHER
+  STUDENT
+  PARENT
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  ALUMNI
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+  HALF_DAY
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(STUDENT)
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  student   Student?
+  teacher   Teacher?
+  parent    Parent?
+}
+
+model Tenant {
+  id        String   @id @default(uuid())
+  name      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  students  Student[]
+  teachers  Teacher[]
+  classes   Class[]
+  exams     Exam[]
+}
+
+model Student {
+  id            String    @id @default(uuid())
+  userId        String?   @unique
+  tenantId      String
+  
+  // Personal Details
+  firstName     String
+  lastName      String
+  dob           DateTime
+  gender        Gender
+  bloodGroup    String?
+  nationality   String?
+  
+  // Academic Details
+  admissionNo   String    @unique
+  rollNo        String?
+  academicYear  String    // e.g., "2023-2024"
+  status        StudentStatus @default(ACTIVE)
+  joinedDate    DateTime  @default(now())
+  
+  // Relations
+  classId       String
+  sectionId     String?
+  
+  user          User?     @relation(fields: [userId], references: [id])
+  tenant        Tenant    @relation(fields: [tenantId], references: [id])
+  class         Class     @relation(fields: [classId], references: [id])
+  section       Section?  @relation(fields: [sectionId], references: [id])
+  
+  parent        Parent?
+  attendance    Attendance[]
+  marks         Mark[]
+  fees          FeeRecord[]
+  documents     Document[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Teacher {
+  id            String    @id @default(uuid())
+  userId        String?   @unique
+  tenantId      String
+  
+  firstName     String
+  lastName      String
+  qualification String?
+  experience    Int?
+  
+  user          User?     @relation(fields: [userId], references: [id])
+  tenant        Tenant    @relation(fields: [tenantId], references: [id])
+  
+  classes       Class[]   // As Class Teacher
+  sections      Section[] // As Class Teacher for section
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Parent {
+  id            String    @id @default(uuid())
+  studentId     String    @unique
+  userId        String?   @unique
+  
+  fatherName    String
+  motherName    String
+  guardianName  String?
+  relationship  String?   // If guardian
+  
+  primaryPhone  String
+  alternatePhone String?
+  email         String?
+  address       String
+  isEmergencyContact Boolean @default(true)
+  
+  student       Student   @relation(fields: [studentId], references: [id])
+  user          User?     @relation(fields: [userId], references: [id])
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Class {
+  id            String    @id @default(uuid())
+  tenantId      String
+  name          String    // e.g., "Class 10"
+  gradeLevel    String
+  teacherId     String?
+  
+  tenant        Tenant    @relation(fields: [tenantId], references: [id])
+  teacher       Teacher?  @relation(fields: [teacherId], references: [id])
+  
+  sections      Section[]
+  students      Student[]
+  subjects      Subject[]
+  exams         Exam[]
+}
+
+model Section {
+  id            String    @id @default(uuid())
+  classId       String
+  name          String    // e.g., "A", "B"
+  teacherId     String?
+  
+  class         Class     @relation(fields: [classId], references: [id])
+  teacher       Teacher?  @relation(fields: [teacherId], references: [id])
+  
+  students      Student[]
+}
+
+model Subject {
+  id            String    @id @default(uuid())
+  name          String
+  code          String
+  classId       String
+  isPractical   Boolean   @default(false)
+  
+  class         Class     @relation(fields: [classId], references: [id])
+  marks         Mark[]
+}
+
+model Attendance {
+  id            String    @id @default(uuid())
+  studentId     String
+  date          DateTime
+  status        AttendanceStatus
+  remarks       String?
+  
+  student       Student   @relation(fields: [studentId], references: [id])
+  
+  @@unique([studentId, date])
+}
+
+model Exam {
+  id            String    @id @default(uuid())
+  tenantId      String
+  classId       String
+  name          String    // e.g. "Final Term", "Unit Test 1"
+  type          String    // FA, SA, Weekly
+  startDate     DateTime
+  endDate       DateTime
+  
+  tenant        Tenant    @relation(fields: [tenantId], references: [id])
+  class         Class     @relation(fields: [classId], references: [id])
+  
+  marks         Mark[]
+}
+
+model Mark {
+  id            String    @id @default(uuid())
+  studentId     String
+  examId        String
+  subjectId     String
+  
+  marksObtained Float
+  maxMarks      Float
+  grade         String?
+  remarks       String?
+  
+  student       Student   @relation(fields: [studentId], references: [id])
+  exam          Exam      @relation(fields: [examId], references: [id])
+  subject       Subject   @relation(fields: [subjectId], references: [id])
+}
+
+model FeeStructure {
+  id            String    @id @default(uuid())
+  name          String    // Tuition, Transport
+  amount        Float
+  frequency     String    // Monthly, Yearly
+  description   String?
+  
+  feeRecords    FeeRecord[]
+}
+
+model FeeRecord {
+  id            String    @id @default(uuid())
+  studentId     String
+  feeStructureId String
+  
+  amountDue     Float
+  amountPaid    Float     @default(0)
+  dueDate       DateTime
+  paidDate      DateTime?
+  status        String    // PAID, PARTIAL, OVERDUE, PENDING
+  
+  student       Student   @relation(fields: [studentId], references: [id])
+  feeStructure  FeeStructure @relation(fields: [feeStructureId], references: [id])
+}
+
+model Document {
+  id            String    @id @default(uuid())
+  studentId     String
+  name          String    // e.g. "Aadhar Card"
+  type          String    // PDF, IMAGE
+  url           String
+  size          Int       // in bytes
+  uploadedAt    DateTime  @default(now())
+  verified      Boolean   @default(false)
+  
+  student       Student   @relation(fields: [studentId], references: [id])
+}

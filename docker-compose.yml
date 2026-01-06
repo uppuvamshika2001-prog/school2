@@ -1,0 +1,55 @@
+version: '3.8'
+
+# ===========================================
+# 🐳 SCHOOL ERP FRONTEND - DOCKER COMPOSE
+# Production-ready container orchestration
+# ===========================================
+
+services:
+  # Frontend Application
+  school-erp-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:5000/api/v1}
+        - NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME:-School ERP}
+        - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+    container_name: school-erp-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000" ]
+      interval: 30s
+      timeout: 10s
+      start_period: 5s
+      retries: 3
+    networks:
+      - school-erp-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.school-erp.rule=Host(`yourschool.com`)"
+      - "traefik.http.routers.school-erp.entrypoints=websecure"
+      - "traefik.http.routers.school-erp.tls.certresolver=letsencrypt"
+
+networks:
+  school-erp-network:
+    driver: bridge
+
+# ===========================================
+# USAGE:
+# Development:
+#   docker-compose up --build
+#
+# Production (with .env file):
+#   docker-compose --env-file .env.production up -d --build
+#
+# View logs:
+#   docker-compose logs -f school-erp-frontend
+#
+# Stop:
+#   docker-compose down
+# ===========================================
