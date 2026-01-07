@@ -7,6 +7,8 @@ import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Check, X, Clock, AlertCircle } from 'lucide-react';
+import { useIsSuperAdmin } from '@/stores/auth.store';
+import { format } from 'date-fns';
 
 const TEACHERS_LIST = [
     { id: '1', name: 'Sarah Johnson', status: 'PRESENT' },
@@ -17,6 +19,7 @@ const TEACHERS_LIST = [
 ];
 
 export default function TeacherAttendancePage() {
+    const isSuperAdmin = useIsSuperAdmin();
     const [date, setDate] = useState<Date | undefined>(new Date());
 
     return (
@@ -46,7 +49,7 @@ export default function TeacherAttendancePage() {
                     <Card>
                         <CardHeader>
                             <CardTitle>Summary</CardTitle>
-                            <CardDescription>Stats for {date?.toLocaleDateString()}</CardDescription>
+                            <CardDescription>Stats for {date ? format(date, 'dd MMMM yyyy') : 'selected date'}</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="flex justify-between items-center">
@@ -78,7 +81,7 @@ export default function TeacherAttendancePage() {
                             <CardTitle>Staff List</CardTitle>
                             <CardDescription>Mark attendance for the selected date</CardDescription>
                         </div>
-                        <Button>Save Changes</Button>
+                        {!isSuperAdmin && <Button>Save Changes</Button>}
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
@@ -94,28 +97,41 @@ export default function TeacherAttendancePage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex gap-2 w-full sm:w-auto">
-                                        <Button
-                                            size="sm"
-                                            variant={teacher.status === 'PRESENT' ? 'default' : 'outline'}
-                                            className={teacher.status === 'PRESENT' ? 'bg-green-600 hover:bg-green-700' : ''}
-                                        >
-                                            Present
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant={teacher.status === 'ABSENT' ? 'destructive' : 'outline'}
-                                        >
-                                            Absent
-                                        </Button>
-                                        <Button
-                                            size="sm"
-                                            variant={teacher.status === 'LATE' ? 'default' : 'outline'}
-                                            className={teacher.status === 'LATE' ? 'bg-yellow-600 hover:bg-yellow-700' : ''}
-                                        >
-                                            Late
-                                        </Button>
-                                    </div>
+                                    {!isSuperAdmin && (
+                                        <div className="flex gap-2 w-full sm:w-auto">
+                                            <Button
+                                                size="sm"
+                                                variant={teacher.status === 'PRESENT' ? 'default' : 'outline'}
+                                                className={teacher.status === 'PRESENT' ? 'bg-green-600 hover:bg-green-700' : ''}
+                                            >
+                                                Present
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant={teacher.status === 'ABSENT' ? 'destructive' : 'outline'}
+                                            >
+                                                Absent
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant={teacher.status === 'LATE' ? 'default' : 'outline'}
+                                                className={teacher.status === 'LATE' ? 'bg-yellow-600 hover:bg-yellow-700' : ''}
+                                            >
+                                                Late
+                                            </Button>
+                                        </div>
+                                    )}
+                                    {isSuperAdmin && (
+                                        <div className="flex items-center">
+                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${teacher.status === 'PRESENT' ? 'bg-green-100 text-green-700' :
+                                                    teacher.status === 'ABSENT' ? 'bg-red-100 text-red-700' :
+                                                        teacher.status === 'LATE' ? 'bg-yellow-100 text-yellow-700' :
+                                                            'bg-gray-100 text-gray-700'
+                                                }`}>
+                                                {teacher.status === 'UNMARKED' ? 'Not Marked' : teacher.status}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
