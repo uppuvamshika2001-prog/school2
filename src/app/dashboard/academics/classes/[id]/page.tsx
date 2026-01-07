@@ -21,7 +21,7 @@ import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { AssignmentDialog } from '@/components/academics/AssignmentDialog';
-import { useIsAdmin } from '@/stores/auth.store';
+import { useIsAdmin, useIsSuperAdmin } from '@/stores/auth.store';
 import {
     Dialog,
     DialogContent,
@@ -46,6 +46,7 @@ export default function ClassDetailPage() {
     const { selectedClass, isLoading, fetchClassById, addSection, students, fetchStudents } = useClassStore();
     const [activeTab, setActiveTab] = useState('overview');
     const isAdmin = useIsAdmin();
+    const isSuperAdmin = useIsSuperAdmin();
 
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogType, setDialogType] = useState<'TEACHER' | 'MONITOR'>('TEACHER');
@@ -206,9 +207,11 @@ export default function ClassDetailPage() {
                                         <CardTitle>Manage Sections</CardTitle>
                                         <CardDescription>Add or remove sections for {selectedClass.name}.</CardDescription>
                                     </div>
-                                    <Button size="sm" className="gap-2" disabled={!isAdmin} onClick={() => setShowAddSectionModal(true)}>
-                                        <Plus className="h-4 w-4" /> Add Section
-                                    </Button>
+                                    {!isSuperAdmin && (
+                                        <Button size="sm" className="gap-2" disabled={!isAdmin} onClick={() => setShowAddSectionModal(true)}>
+                                            <Plus className="h-4 w-4" /> Add Section
+                                        </Button>
+                                    )}
                                 </CardHeader>
                                 <CardContent>
                                     {selectedClass.sections.length > 0 ? (
