@@ -32,6 +32,7 @@ import {
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { X, CalendarDays, TrendingUp, Info } from 'lucide-react';
+import { useIsSuperAdmin } from '@/stores/auth.store';
 
 const feeSchema = z.object({
     classId: z.string().min(1, 'Class is required'),
@@ -45,6 +46,7 @@ const feeSchema = z.object({
 type FeeFormValues = z.infer<typeof feeSchema>;
 
 export default function FeeStructurePage() {
+    const isSuperAdmin = useIsSuperAdmin();
     const { structures, fetchStructures, addStructure, isLoading } = useFeeStore();
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -129,7 +131,7 @@ export default function FeeStructurePage() {
                     <h1 className="text-3xl font-bold tracking-tight">Fee Structure Management</h1>
                     <p className="text-muted-foreground mt-1">Define annual fee benchmarks for different classes</p>
                 </div>
-                {!isAdding && (
+                {!isAdding && !isSuperAdmin && (
                     <Button onClick={() => { setIsAdding(true); setEditingId(null); reset(); }} className="gap-2">
                         <Plus className="h-4 w-4" /> Create New Structure
                     </Button>
@@ -251,9 +253,11 @@ export default function FeeStructurePage() {
                                     <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
                                         AY {structure.academicYear}
                                     </Badge>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => handleDelete(structure.id)}>
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
+                                    {!isSuperAdmin && (
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => handleDelete(structure.id)}>
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    )}
                                 </div>
                                 <CardTitle className="text-2xl mt-2">{structure.className}</CardTitle>
                                 <CardDescription>Annual Consolidated Fees</CardDescription>
@@ -271,13 +275,15 @@ export default function FeeStructurePage() {
                                     <span className="text-sm font-bold uppercase tracking-wider">Total Amount</span>
                                     <span className="text-xl font-black font-mono">₹{structure.totalAmount.toLocaleString()}</span>
                                 </div>
-                                <div className="grid grid-cols-2 gap-0 mt-4 h-10 border rounded-lg overflow-hidden">
-                                    <button
-                                        className="text-sm font-medium hover:bg-muted transition-colors border-r"
-                                        onClick={() => handleEdit(structure)}
-                                    >
-                                        Edit
-                                    </button>
+                                <div className={`grid ${isSuperAdmin ? 'grid-cols-1' : 'grid-cols-2'} gap-0 mt-4 h-10 border rounded-lg overflow-hidden`}>
+                                    {!isSuperAdmin && (
+                                        <button
+                                            className="text-sm font-medium hover:bg-muted transition-colors border-r"
+                                            onClick={() => handleEdit(structure)}
+                                        >
+                                            Edit
+                                        </button>
+                                    )}
                                     <button
                                         className="text-sm font-medium hover:bg-muted transition-colors"
                                         onClick={() => setSelectedViewStructure(structure)}
@@ -367,9 +373,11 @@ export default function FeeStructurePage() {
                             <Button variant="outline" className="flex-1 h-12 gap-2" onClick={() => setSelectedViewStructure(null)}>
                                 Close View
                             </Button>
-                            <Button className="flex-1 h-12 gap-2" onClick={() => { handleEdit(selectedViewStructure); setSelectedViewStructure(null); }}>
-                                <Save className="h-4 w-4" /> Edit Configuration
-                            </Button>
+                            {!isSuperAdmin && (
+                                <Button className="flex-1 h-12 gap-2" onClick={() => { handleEdit(selectedViewStructure); setSelectedViewStructure(null); }}>
+                                    <Save className="h-4 w-4" /> Edit Configuration
+                                </Button>
+                            )}
                         </div>
                     </div>
                 </DialogContent>
