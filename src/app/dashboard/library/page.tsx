@@ -24,6 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { useLibraryStore } from '@/stores/library.store';
 import { Book, BookCategory, BookStatus } from '@/types/library.types';
 import { toast } from 'sonner';
+import { useIsSuperAdmin } from '@/stores/auth.store';
 
 const categoryLabels: Record<BookCategory, string> = {
     fiction: 'Fiction',
@@ -46,6 +47,7 @@ const statusConfig: Record<BookStatus, { label: string; color: string; bg: strin
 };
 
 export default function LibraryPage() {
+    const isSuperAdmin = useIsSuperAdmin();
     const {
         books,
         summary,
@@ -118,12 +120,14 @@ export default function LibraryPage() {
                             Digital Library
                         </Link>
                     </Button>
-                    <Button className="gap-2" asChild>
-                        <Link href="/dashboard/library/manage">
-                            <Plus className="w-4 h-4" />
-                            Add Book
-                        </Link>
-                    </Button>
+                    {!isSuperAdmin && (
+                        <Button className="gap-2" asChild>
+                            <Link href="/dashboard/library/manage">
+                                <Plus className="w-4 h-4" />
+                                Add Book
+                            </Link>
+                        </Button>
+                    )}
                 </div>
             </div>
 

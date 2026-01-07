@@ -25,6 +25,7 @@ import { Badge } from '@/components/ui/badge';
 import { useLibraryStore } from '@/stores/library.store';
 import { DigitalResource, ResourceType, BookCategory } from '@/types/library.types';
 import { toast } from 'sonner';
+import { useIsSuperAdmin } from '@/stores/auth.store';
 
 const resourceTypeConfig: Record<ResourceType, { label: string; icon: React.ReactNode; color: string; bg: string }> = {
     pdf: {
@@ -83,6 +84,7 @@ function formatDate(dateString: string): string {
 }
 
 export default function DigitalLibraryPage() {
+    const isSuperAdmin = useIsSuperAdmin();
     const {
         digitalResources,
         isLoading,
@@ -133,12 +135,14 @@ export default function DigitalLibraryPage() {
                         </p>
                     </div>
                 </div>
-                <Button className="gap-2" asChild>
-                    <Link href="/dashboard/library/manage">
-                        <Plus className="w-4 h-4" />
-                        Upload Resource
-                    </Link>
-                </Button>
+                {!isSuperAdmin && (
+                    <Button className="gap-2" asChild>
+                        <Link href="/dashboard/library/manage">
+                            <Plus className="w-4 h-4" />
+                            Upload Resource
+                        </Link>
+                    </Button>
+                )}
             </div>
 
             {/* Resource Type Tabs */}
