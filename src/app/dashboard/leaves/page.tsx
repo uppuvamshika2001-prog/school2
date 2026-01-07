@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useLeaveStore } from '@/stores/leave.store';
+import { useIsSuperAdmin } from '@/stores/auth.store';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -13,6 +14,7 @@ import { Leave } from '@/types/leave';
 import { Check, X } from 'lucide-react';
 
 export default function AdminLeavePage() {
+    const isSuperAdmin = useIsSuperAdmin();
     const {
         teacherLeaves,
         fetchTeacherLeaves,
@@ -53,7 +55,7 @@ export default function AdminLeavePage() {
                             <th className="h-12 px-4 align-middle font-medium text-muted-foreground">Dates</th>
                             <th className="h-12 px-4 align-middle font-medium text-muted-foreground">Reason</th>
                             <th className="h-12 px-4 align-middle font-medium text-muted-foreground w-[100px]">Status</th>
-                            <th className="h-12 px-4 align-middle font-medium text-muted-foreground text-right">Actions</th>
+                            {!isSuperAdmin && <th className="h-12 px-4 align-middle font-medium text-muted-foreground text-right">Actions</th>}
                         </tr>
                     </thead>
                     <tbody className="[&_tr:last-child]:border-0">
@@ -79,32 +81,34 @@ export default function AdminLeavePage() {
                                     <td className="p-4 align-middle">
                                         <LeaveStatusBadge status={leave.status} />
                                     </td>
-                                    <td className="p-4 align-middle text-right">
-                                        {leave.status === 'PENDING' && (
-                                            <div className="flex justify-end gap-2">
-                                                <Button
-                                                    size="sm"
-                                                    className="bg-green-600 hover:bg-green-700 h-8 w-8 p-0"
-                                                    onClick={() => approveLeave(leave.id)}
-                                                    title="Approve"
-                                                >
-                                                    <Check className="h-4 w-4" />
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="destructive"
-                                                    className="h-8 w-8 p-0"
-                                                    onClick={() => handleRejectClick(leave.id)}
-                                                    title="Reject"
-                                                >
-                                                    <X className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        )}
-                                        {leave.status === 'REJECTED' && leave.rejectionReason && (
-                                            <span className="text-xs text-red-500 italic">" {leave.rejectionReason} "</span>
-                                        )}
-                                    </td>
+                                    {!isSuperAdmin && (
+                                        <td className="p-4 align-middle text-right">
+                                            {leave.status === 'PENDING' && (
+                                                <div className="flex justify-end gap-2">
+                                                    <Button
+                                                        size="sm"
+                                                        className="bg-green-600 hover:bg-green-700 h-8 w-8 p-0"
+                                                        onClick={() => approveLeave(leave.id)}
+                                                        title="Approve"
+                                                    >
+                                                        <Check className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
+                                                        className="h-8 w-8 p-0"
+                                                        onClick={() => handleRejectClick(leave.id)}
+                                                        title="Reject"
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            )}
+                                            {leave.status === 'REJECTED' && leave.rejectionReason && (
+                                                <span className="text-xs text-red-500 italic">" {leave.rejectionReason} "</span>
+                                            )}
+                                        </td>
+                                    )}
                                 </tr>
                             ))
                         )}
