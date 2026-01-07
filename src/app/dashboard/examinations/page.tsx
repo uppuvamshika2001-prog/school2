@@ -447,9 +447,11 @@ export default function ExaminationsPage() {
                     <p className="text-sm text-muted-foreground mt-1">Manage exams, schedules, and results</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Link href="/dashboard/examinations/marks-entry">
-                        <Button variant="outline" size="sm">Marks Entry</Button>
-                    </Link>
+                    {!isSuperAdmin && (
+                        <Link href="/dashboard/examinations/marks-entry">
+                            <Button variant="outline" size="sm">Marks Entry</Button>
+                        </Link>
+                    )}
                     <Link href="/dashboard/examinations/analytics">
                         <Button variant="outline" size="sm">Analytics</Button>
                     </Link>
@@ -547,7 +549,7 @@ export default function ExaminationsPage() {
                                             <th className="h-12 px-4 text-left text-sm font-medium text-muted-foreground">Classes</th>
                                             <th className="h-12 px-4 text-left text-sm font-medium text-muted-foreground">Avg %</th>
                                             <th className="h-12 px-4 text-left text-sm font-medium text-muted-foreground">Status</th>
-                                            <th className="h-12 px-4 text-left text-sm font-medium text-muted-foreground">Actions</th>
+                                            {!isSuperAdmin && <th className="h-12 px-4 text-left text-sm font-medium text-muted-foreground">Actions</th>}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -574,19 +576,21 @@ export default function ExaminationsPage() {
                                                             {exam.status}
                                                         </span>
                                                     </td>
-                                                    <td className="h-14 px-4">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => {
-                                                                setSelectedExamForSchedule(exam);
-                                                                setShowScheduleExamDialog(true);
-                                                            }}
-                                                        >
-                                                            <Plus className="w-4 h-4 mr-1" />
-                                                            Schedule
-                                                        </Button>
-                                                    </td>
+                                                    {!isSuperAdmin && (
+                                                        <td className="h-14 px-4">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    setSelectedExamForSchedule(exam);
+                                                                    setShowScheduleExamDialog(true);
+                                                                }}
+                                                            >
+                                                                <Plus className="w-4 h-4 mr-1" />
+                                                                Schedule
+                                                            </Button>
+                                                        </td>
+                                                    )}
                                                 </tr>
                                                 {expandedExamId === exam.id && (
                                                     <tr>
