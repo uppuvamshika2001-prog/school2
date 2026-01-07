@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Bell, Plus, Calendar, Users, Eye, Trash2, X, Megaphone, AlertCircle, Info } from 'lucide-react';
 import { toast } from 'sonner';
+import { useIsSuperAdmin } from '@/stores/auth.store';
 
 const initialAnnouncements = [
     {
@@ -74,6 +75,7 @@ const initialAnnouncements = [
 ];
 
 export default function AnnouncementsPage() {
+    const isSuperAdmin = useIsSuperAdmin();
     const [announcements, setAnnouncements] = useState(initialAnnouncements);
     const [showAddModal, setShowAddModal] = useState(false);
     const [newAnnouncement, setNewAnnouncement] = useState({
@@ -131,13 +133,15 @@ export default function AnnouncementsPage() {
                     <h1 className="text-3xl font-bold tracking-tight">Announcements</h1>
                     <p className="text-muted-foreground mt-1">Broadcast messages to students, parents and staff.</p>
                 </div>
-                <button
-                    onClick={() => setShowAddModal(true)}
-                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2"
-                >
-                    <Plus className="w-4 h-4" />
-                    <span>New Announcement</span>
-                </button>
+                {!isSuperAdmin && (
+                    <button
+                        onClick={() => setShowAddModal(true)}
+                        className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2"
+                    >
+                        <Plus className="w-4 h-4" />
+                        <span>New Announcement</span>
+                    </button>
+                )}
             </div>
 
             {/* Stats */}
@@ -219,12 +223,14 @@ export default function AnnouncementsPage() {
                                     </span>
                                 </div>
                             </div>
-                            <button
-                                onClick={() => handleDelete(announcement.id)}
-                                className="p-2 hover:bg-destructive/10 text-destructive rounded-lg transition-colors"
-                            >
-                                <Trash2 className="w-4 h-4" />
-                            </button>
+                            {!isSuperAdmin && (
+                                <button
+                                    onClick={() => handleDelete(announcement.id)}
+                                    className="p-2 hover:bg-destructive/10 text-destructive rounded-lg transition-colors"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            )}
                         </div>
                     </div>
                 ))}
