@@ -307,7 +307,7 @@ export default function SubjectsPage() {
                                 <th className="px-6 py-4 text-left">Code</th>
                                 <th className="px-6 py-4 text-left">Department</th>
                                 <th className="px-6 py-4 text-left">Type</th>
-                                <th className="px-6 py-4 text-right">Actions</th>
+                                {!isSuperAdmin && <th className="px-6 py-4 text-right">Actions</th>}
                             </tr>
                         </thead>
                         <tbody className="divide-y text-sm">
@@ -331,8 +331,8 @@ export default function SubjectsPage() {
                                             {sub.type}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-right">
-                                        {!isSuperAdmin && (
+                                    {!isSuperAdmin && (
+                                        <td className="px-6 py-4 text-right">
                                             <div className="relative inline-block" ref={activeDropdown === sub.id ? dropdownRef : null}>
                                                 <button
                                                     onClick={() => toggleDropdown(sub.id)}
@@ -359,8 +359,8 @@ export default function SubjectsPage() {
                                                     </div>
                                                 )}
                                             </div>
-                                        )}
-                                    </td>
+                                        </td>
+                                    )}
                                 </tr>
                             ))}
                         </tbody>
