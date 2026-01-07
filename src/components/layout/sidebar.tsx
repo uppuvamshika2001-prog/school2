@@ -318,9 +318,13 @@ export default function Sidebar() {
         ...item,
         children: item.children.filter(child => {
           if (!child.roles) {
-            // For super admin, hide add/create/manage type links
+            // For super admin, hide add/create/manage type links (except Leave Management)
             if (isSuperAdmin) {
               const label = child.label.toLowerCase();
+              // Allow "Leave Management" specifically
+              if (label === 'leave management') {
+                return true;
+              }
               if (label.includes('add') || label.includes('create') || label.includes('manage') || label.includes('new')) {
                 return false;
               }
@@ -328,9 +332,13 @@ export default function Sidebar() {
             return true;
           }
           if (!user) return false;
-          // For super admin, hide add/create/manage type links
+          // For super admin, hide add/create/manage type links (except Leave Management)
           if (isSuperAdmin) {
             const label = child.label.toLowerCase();
+            // Allow "Leave Management" specifically
+            if (label === 'leave management') {
+              return true;
+            }
             if (label.includes('add') || label.includes('create') || label.includes('manage') || label.includes('new')) {
               return false;
             }
