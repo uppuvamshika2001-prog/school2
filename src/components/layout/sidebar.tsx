@@ -54,8 +54,8 @@ const navItems: NavItem[] = [
     icon: GraduationCap,
     roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN'],
     children: [
-      { label: 'All Students', href: '/dashboard/students', icon: GraduationCap },
-      { label: 'Leave Management', href: '/dashboard/students/leaves', icon: FileText },
+      { label: 'All Students', href: '/dashboard/students', icon: GraduationCap, roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN'] },
+      { label: 'Leave Management', href: '/dashboard/students/leaves', icon: FileText, roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN'] },
     ],
   },
   {
