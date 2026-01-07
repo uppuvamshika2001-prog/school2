@@ -24,7 +24,7 @@ function Calendar({
                 months: 'relative flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
                 month: 'space-y-4 w-full relative',
                 month_caption: 'flex justify-center pt-1 relative items-center h-10',
-                caption_label: 'hidden', // Hide static label when using dropdowns
+                caption_label: 'text-sm font-bold', // Show month/year label
                 nav: 'flex items-center',
                 button_previous: cn(
                     buttonVariants({ variant: 'outline' }),
