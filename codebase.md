@@ -194,7 +194,8 @@ school-erp/
 │   └── page.tsx              # Weekly Test Management
 └── page.tsx                  # Examination Dashboard
 ```
-**Features:** Exam scheduling, Marks entry, Grade calculation, Result generation
+**Features:** Exam scheduling, Marks entry, Grade calculation, Result generation.  
+**Access Note:** Marks entry and scheduling are restricted to Teachers/Admins; Super Admin focus is on oversight.
 
 ---
 
@@ -227,7 +228,8 @@ school-erp/
 │   └── page.tsx              # Fee Structure
 └── page.tsx                  # Fee Dashboard
 ```
-**Features:** Fee collection, Payment tracking, Reports, Structure management
+**Features:** Fee collection, Payment tracking, Reports, Structure management.  
+**Access Note:** Fee collection and structure management restricted to School Admin; Super Admin has monitoring access.
 
 ---
 
@@ -247,6 +249,7 @@ school-erp/
 - Digital resources: PDF, Video, Audio, Presentations
 - Category & subject filtering
 - Download tracking
+- **Super Admin Access:** Read-only catalog browsing and resource viewing.
 
 ---
 
@@ -460,7 +463,9 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ---
 
-### Refinements (v1.2.0)
+### Refinements (v1.3.0)
+- ✅ **Super Admin Read-Only Access** - Restricted administrative actions (Create, Edit, Delete) for Super Admin across multiple modules.
+- ✅ **Operational Monitoring** - Optimized Library, Examinations, Fees, and Attendance for Super Admin to focus on oversight rather than management.
 - ✅ **UI Refinement** - Professional & simple design system update
 - ✅ **Simplified Feedback** - Removed status-based clutter and optimized for analysis
 - ✅ **Role Scaling** - Streamlined sidebar and actions based on user roles (Admin vs User)
@@ -960,5 +965,5 @@ const DataChart = dynamic(
 ---
 
 > **Maintained by:** Development Team  
-> **Last Review:** January 5, 2026  
-> **Documentation Version:** 2.0
+> **Last Review:** January 7, 2026  
+> **Documentation Version:** 2.1
