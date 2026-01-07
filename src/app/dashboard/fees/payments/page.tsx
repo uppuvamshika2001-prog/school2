@@ -36,8 +36,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useEffect } from 'react';
 import { useFeeStore } from '@/stores/fee.store';
+import { useIsSuperAdmin } from '@/stores/auth.store';
 
 export default function FeePaymentsPage() {
+    const isSuperAdmin = useIsSuperAdmin();
     const { payments, collectPayment, studentFees, fetchStudentFees } = useFeeStore();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedPayment, setSelectedPayment] = useState<any>(null);
@@ -229,13 +231,15 @@ export default function FeePaymentsPage() {
                         <Download className="w-4 h-4" />
                         <span>Export</span>
                     </button>
-                    <button
-                        className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2 font-medium shadow-sm"
-                        onClick={() => setShowCollectDialog(true)}
-                    >
-                        <IndianRupee className="w-4 h-4" />
-                        <span>Collect Fee</span>
-                    </button>
+                    {!isSuperAdmin && (
+                        <button
+                            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2 font-medium shadow-sm"
+                            onClick={() => setShowCollectDialog(true)}
+                        >
+                            <IndianRupee className="w-4 h-4" />
+                            <span>Collect Fee</span>
+                        </button>
+                    )}
                 </div>
             </div>
 
