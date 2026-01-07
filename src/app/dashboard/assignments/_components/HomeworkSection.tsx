@@ -99,22 +99,24 @@ export default function HomeworkSection() {
                         {displayHomeworks.length} task{displayHomeworks.length !== 1 ? 's' : ''} found
                     </p>
                 </div>
-                <Button
-                    onClick={() => setIsAddingNew(!isAddingNew)}
-                    variant={isAddingNew ? "outline" : "default"}
-                >
-                    {isAddingNew ? (
-                        <>
-                            <X className="w-4 h-4 mr-2" />
-                            Cancel
-                        </>
-                    ) : (
-                        <>
-                            <Plus className="w-4 h-4 mr-2" />
-                            New Task
-                        </>
-                    )}
-                </Button>
+                {!isAdmin && (
+                    <Button
+                        onClick={() => setIsAddingNew(!isAddingNew)}
+                        variant={isAddingNew ? "outline" : "default"}
+                    >
+                        {isAddingNew ? (
+                            <>
+                                <X className="w-4 h-4 mr-2" />
+                                Cancel
+                            </>
+                        ) : (
+                            <>
+                                <Plus className="w-4 h-4 mr-2" />
+                                New Task
+                            </>
+                        )}
+                    </Button>
+                )}
             </div>
 
             {/* Add/Edit Form */}
@@ -243,7 +245,7 @@ export default function HomeworkSection() {
                                         <th className="h-12 px-4 text-left text-sm font-medium text-muted-foreground">Type</th>
                                         <th className="h-12 px-4 text-left text-sm font-medium text-muted-foreground">Due Date</th>
                                         {isAdmin && <th className="h-12 px-4 text-left text-sm font-medium text-muted-foreground">Teacher</th>}
-                                        <th className="h-12 px-4 text-left text-sm font-medium text-muted-foreground w-24">Actions</th>
+                                        {!isAdmin && <th className="h-12 px-4 text-left text-sm font-medium text-muted-foreground w-24">Actions</th>}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -269,28 +271,30 @@ export default function HomeworkSection() {
                                                     {homework.dueDate ? format(new Date(homework.dueDate), 'dd MMM yyyy') : '-'}
                                                 </td>
                                                 {isAdmin && <td className="h-14 px-4 text-sm text-muted-foreground">{homework.teacherName}</td>}
-                                                <td className="h-14 px-4">
-                                                    {(isAdmin || homework.teacherId === user?.id) && (
-                                                        <div className="flex items-center gap-1">
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="h-8 w-8"
-                                                                onClick={() => handleEdit(homework)}
-                                                            >
-                                                                <Edit className="w-4 h-4" />
-                                                            </Button>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="h-8 w-8 text-destructive"
-                                                                onClick={() => deleteHomework(homework.id)}
-                                                            >
-                                                                <Trash2 className="w-4 h-4" />
-                                                            </Button>
-                                                        </div>
-                                                    )}
-                                                </td>
+                                                {!isAdmin && (
+                                                    <td className="h-14 px-4">
+                                                        {homework.teacherId === user?.id && (
+                                                            <div className="flex items-center gap-1">
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-8 w-8"
+                                                                    onClick={() => handleEdit(homework)}
+                                                                >
+                                                                    <Edit className="w-4 h-4" />
+                                                                </Button>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-8 w-8 text-destructive"
+                                                                    onClick={() => deleteHomework(homework.id)}
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </Button>
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                )}
                                             </tr>
                                         ))}
                                 </tbody>
