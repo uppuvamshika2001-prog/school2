@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
     Search, Calendar as CalendarIcon, Users, CheckCircle, XCircle,
     Clock, Download, Filter, X, Phone, Mail, MapPin,
@@ -148,6 +148,22 @@ export default function AttendancePage() {
     const [showLateModal, setShowLateModal] = useState(false);
     const [showAnalysisModal, setShowAnalysisModal] = useState(false);
 
+    // Reset all modals when component mounts (page navigation)
+    useEffect(() => {
+        setShowPresentModal(false);
+        setShowAbsentModal(false);
+        setShowLateModal(false);
+        setShowAnalysisModal(false);
+
+        // Cleanup on unmount
+        return () => {
+            setShowPresentModal(false);
+            setShowAbsentModal(false);
+            setShowLateModal(false);
+            setShowAnalysisModal(false);
+        };
+    }, []);
+
     // Date object for Calendar component
     const dateObj = useMemo(() => {
         try {
@@ -265,11 +281,15 @@ export default function AttendancePage() {
                                     {selectedDate ? format(dateObj, "PPP") : <span>Pick a date</span>}
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
+                            <PopoverContent className="w-auto p-0 z-[250]" align="start">
                                 <Calendar
                                     mode="single"
                                     selected={dateObj}
-                                    onSelect={(date) => date && setSelectedDate(format(date, "yyyy-MM-dd"))}
+                                    onSelect={(date) => {
+                                        if (date) {
+                                            setSelectedDate(format(date, "yyyy-MM-dd"));
+                                        }
+                                    }}
                                     initialFocus
                                 />
                             </PopoverContent>
@@ -704,7 +724,7 @@ export default function AttendancePage() {
 
             {/* Attendance Analysis Modal */}
             {showAnalysisModal && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[150] p-4">
                     <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden border border-slate-200 dark:border-slate-800">
                         {/* Modal Header */}
                         <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900">
@@ -715,7 +735,7 @@ export default function AttendancePage() {
                                 <div>
                                     <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-50">Attendance Analysis</h2>
                                     <div className="flex items-center gap-2 mt-1">
-                                        <Calendar className="w-4 h-4 text-slate-400" />
+                                        <CalendarIcon className="w-4 h-4 text-slate-400" />
                                         <span className="text-sm text-slate-500 dark:text-slate-400">Showing report for {new Date(selectedDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                                     </div>
                                 </div>

@@ -55,10 +55,10 @@ const typeConfig: Record<FeedbackType, { label: string; icon: React.ReactNode; c
 
 const statusConfig = {
     pending: {
-        label: 'Pending Review',
-        color: 'bg-yellow-500',
+        label: 'Pending',
+        color: 'bg-amber-500',
         icon: <Clock className="w-4 h-4" />,
-        description: 'This feedback is awaiting review'
+        description: 'Waiting for administration review'
     },
     reviewed: {
         label: 'Under Review',
@@ -165,9 +165,9 @@ export default function FeedbackDetailPage() {
                 <div className="flex-1">
                     <div className="flex items-center gap-3">
                         <h1 className="text-2xl font-bold tracking-tight">{typeInfo.label}</h1>
-                        <Badge className={`${statusInfo.color} text-white gap-1`}>
+                        <Badge className={`${statusInfo.color} text-white border-none py-0.5 px-2.5 text-[10px] font-bold uppercase tracking-wider`}>
                             {statusInfo.icon}
-                            {statusInfo.label}
+                            <span className="ml-1.5">{statusInfo.label}</span>
                         </Badge>
                     </div>
                     <p className="text-muted-foreground mt-1 text-sm">{statusInfo.description}</p>
@@ -178,14 +178,14 @@ export default function FeedbackDetailPage() {
                 {/* Main Content */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* Feedback Type Card */}
-                    <Card className={`border-2 ${typeInfo.border} shadow-sm overflow-hidden`}>
-                        <div className={`p-4 ${typeInfo.bg} border-b ${typeInfo.border} flex items-center gap-3`}>
+                    <Card className={`border shadow-sm overflow-hidden`}>
+                        <div className={`p-4 ${typeInfo.bg} border-b flex items-center gap-4`}>
                             <div className={`p-3 bg-white rounded-xl shadow-sm ${typeInfo.color}`}>
                                 {typeInfo.icon}
                             </div>
                             <div>
-                                <p className="font-bold">{typeInfo.label}</p>
-                                <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">
+                                <p className="font-bold text-lg">{typeInfo.label}</p>
+                                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.1em]">
                                     {categoryLabels[feedback.category]}
                                 </p>
                             </div>

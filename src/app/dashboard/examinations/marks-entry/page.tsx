@@ -22,25 +22,35 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 
 export default function MarksEntryPage() {
-    const { exams, fetchExams, currentScores, fetchScores, saveScores, isLoading } = useExamStore();
+    const {
+        exams, fetchExams,
+        weeklyTests, fetchWeeklyTests,
+        currentScores, fetchScores, saveScores, isLoading
+    } = useExamStore();
     const { classes, fetchClasses } = useClassStore();
 
+    const [entryMode, setEntryMode] = useState<'exam' | 'weekly'>('exam');
     const [selectedExam, setSelectedExam] = useState('');
     const [selectedClass, setSelectedClass] = useState('');
     const [selectedSubject, setSelectedSubject] = useState('');
     const [scores, setScores] = useState(currentScores);
     const [searchTerm, setSearchTerm] = useState('');
+    const [hasApplied, setHasApplied] = useState(false);
 
     useEffect(() => {
         fetchExams();
+        fetchWeeklyTests();
         fetchClasses();
-    }, [fetchExams, fetchClasses]);
+    }, [fetchExams, fetchWeeklyTests, fetchClasses]);
 
-    useEffect(() => {
-        if (selectedExam && selectedClass && selectedSubject) {
-            fetchScores(selectedExam, selectedClass, selectedSubject);
+    const handleApply = async () => {
+        if (!selectedExam || !selectedClass || !selectedSubject) {
+            toast.error('Please select all fields');
+            return;
         }
-    }, [selectedExam, selectedClass, selectedSubject, fetchScores]);
+        await fetchScores(selectedExam, selectedClass, selectedSubject, entryMode === 'weekly');
+        setHasApplied(true);
+    };
 
     useEffect(() => {
         setScores(currentScores);
@@ -71,7 +81,7 @@ export default function MarksEntryPage() {
         }
 
         try {
-            await saveScores(selectedExam, selectedClass, selectedSubject, scores);
+            await saveScores(selectedExam, selectedClass, selectedSubject, scores, entryMode === 'weekly');
             toast.success('Marks updated successfully');
         } catch (error) {
             toast.error('Failed to save marks');
@@ -101,59 +111,111 @@ export default function MarksEntryPage() {
 
             <Card className="border-none shadow-sm bg-muted/20">
                 <CardContent className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium flex items-center gap-2">
-                                <GraduationCap className="h-4 w-4 text-primary" /> Examination
-                            </label>
-                            <select
-                                className="w-full h-10 px-3 rounded-md border bg-background"
-                                value={selectedExam}
-                                onChange={(e) => setSelectedExam(e.target.value)}
+                    <div className="flex flex-col gap-6">
+                        <div className="flex items-center gap-2 p-1 bg-muted rounded-lg w-fit">
+                            <Button
+                                variant={entryMode === 'exam' ? 'default' : 'ghost'}
+                                size="sm"
+                                onClick={() => {
+                                    setEntryMode('exam');
+                                    setSelectedExam('');
+                                    setHasApplied(false);
+                                }}
+                                className="rounded-md"
                             >
-                                <option value="">Select Exam</option>
-                                {exams.map(exam => (
-                                    <option key={exam.id} value={exam.id}>{exam.name}</option>
-                                ))}
-                            </select>
+                                Exam
+                            </Button>
+                            <Button
+                                variant={entryMode === 'weekly' ? 'default' : 'ghost'}
+                                size="sm"
+                                onClick={() => {
+                                    setEntryMode('weekly');
+                                    setSelectedExam('');
+                                    setHasApplied(false);
+                                }}
+                                className="rounded-md"
+                            >
+                                Weekly Test
+                            </Button>
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium flex items-center gap-2">
-                                <Users className="h-4 w-4 text-primary" /> Class & Section
-                            </label>
-                            <select
-                                className="w-full h-10 px-3 rounded-md border bg-background"
-                                value={selectedClass}
-                                onChange={(e) => setSelectedClass(e.target.value)}
-                            >
-                                <option value="">Select Class</option>
-                                {classes.map(cls => (
-                                    <option key={cls.id} value={cls.id}>{cls.name}</option>
-                                ))}
-                            </select>
-                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium flex items-center gap-2">
+                                    <GraduationCap className="h-4 w-4 text-primary" /> {entryMode === 'exam' ? 'Exam' : 'Weekly Test'}
+                                </label>
+                                <select
+                                    className="w-full h-10 px-3 rounded-md border bg-background"
+                                    value={selectedExam}
+                                    onChange={(e) => {
+                                        setSelectedExam(e.target.value);
+                                        setHasApplied(false);
+                                    }}
+                                >
+                                    <option value="">Select {entryMode === 'exam' ? 'Exam' : 'Test'}</option>
+                                    {entryMode === 'exam' ? (
+                                        exams.map(exam => (
+                                            <option key={exam.id} value={exam.id}>{exam.name}</option>
+                                        ))
+                                    ) : (
+                                        weeklyTests.map(test => (
+                                            <option key={test.id} value={test.id}>{test.week} - {test.subject} ({test.class})</option>
+                                        ))
+                                    )}
+                                </select>
+                            </div>
 
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium flex items-center gap-2">
-                                <BookOpen className="h-4 w-4 text-primary" /> Subject
-                            </label>
-                            <select
-                                className="w-full h-10 px-3 rounded-md border bg-background"
-                                value={selectedSubject}
-                                onChange={(e) => setSelectedSubject(e.target.value)}
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium flex items-center gap-2">
+                                    <Users className="h-4 w-4 text-primary" /> Class & Section
+                                </label>
+                                <select
+                                    className="w-full h-10 px-3 rounded-md border bg-background"
+                                    value={selectedClass}
+                                    onChange={(e) => {
+                                        setSelectedClass(e.target.value);
+                                        setHasApplied(false);
+                                    }}
+                                >
+                                    <option value="">Select Class</option>
+                                    {classes.map(cls => (
+                                        <option key={cls.id} value={cls.id}>{cls.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium flex items-center gap-2">
+                                    <BookOpen className="h-4 w-4 text-primary" /> Subject
+                                </label>
+                                <select
+                                    className="w-full h-10 px-3 rounded-md border bg-background"
+                                    value={selectedSubject}
+                                    onChange={(e) => {
+                                        setSelectedSubject(e.target.value);
+                                        setHasApplied(false);
+                                    }}
+                                >
+                                    <option value="">Select Subject</option>
+                                    {subjects.map(sub => (
+                                        <option key={sub} value={sub.toLowerCase()}>{sub}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <Button
+                                onClick={handleApply}
+                                disabled={isLoading || !selectedExam || !selectedClass || !selectedSubject}
+                                className="w-full h-10"
                             >
-                                <option value="">Select Subject</option>
-                                {subjects.map(sub => (
-                                    <option key={sub} value={sub.toLowerCase()}>{sub}</option>
-                                ))}
-                            </select>
+                                Apply
+                            </Button>
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
-            {selectedExam && selectedClass && selectedSubject ? (
+            {hasApplied && selectedExam && selectedClass && selectedSubject ? (
                 <Card className="border-none shadow-sm h-full">
                     <CardHeader className="flex flex-row items-center justify-between border-b pb-4">
                         <div className="space-y-1">

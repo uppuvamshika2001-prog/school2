@@ -16,69 +16,67 @@ import {
     Trophy,
     Target,
     Users,
-    Download
+    Download,
+    CheckCircle2,
+    XCircle
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from "@/components/ui/dialog";
 
 export default function ResultsViewPage() {
-    const { results, fetchResults, isLoading } = useExamStore();
+    const {
+        results, fetchResults,
+        weeklyResults, fetchWeeklyResults,
+        currentScores, fetchScores,
+        isLoading
+    } = useExamStore();
     const { classes, fetchClasses } = useClassStore();
 
     const [selectedClass, setSelectedClass] = useState('');
     const [selectedExamType, setSelectedExamType] = useState('ALL');
+    const [selectedWeekClass, setSelectedWeekClass] = useState('');
+    const [selectedWeek, setSelectedWeek] = useState('ALL');
 
     const [activeTab, setActiveTab] = useState<'exam' | 'weekly'>('exam');
     const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
 
-    // Dummy Weekly Results (Mock Data)
-    const dummyWeeklyResults = [
-        {
-            classId: 'w1',
-            className: 'Class 10-A (Weekly)',
-            examId: 'w-test-1',
-            totalStudents: 35,
-            passed: 30,
-            failed: 5,
-            averageMarks: 75.5,
-            passPercentage: 85.7,
-            subjects: [
-                { subjectId: 's1', subjectName: 'Mathematics', highestMarks: 24, highestScorer: 'Arjun', lowestMarks: 8, lowestScorer: 'Lakshmi', averageMarks: 74, passPercentage: 88 },
-                { subjectId: 's2', subjectName: 'Science', highestMarks: 25, highestScorer: 'Priya', lowestMarks: 9, lowestScorer: 'Ravi', averageMarks: 76.8, passPercentage: 92 },
-                { subjectId: 's3', subjectName: 'English', highestMarks: 23, highestScorer: 'Rahul', lowestMarks: 10, lowestScorer: 'Suresh', averageMarks: 72, passPercentage: 86 }
-            ]
-        },
-        {
-            classId: 'w2',
-            className: 'Class 10-B (Weekly)',
-            examId: 'w-test-2',
-            totalStudents: 33,
-            passed: 28,
-            failed: 5,
-            averageMarks: 72.3,
-            passPercentage: 84.8,
-            subjects: [
-                { subjectId: 's4', subjectName: 'Mathematics', highestMarks: 22, highestScorer: 'Amit', lowestMarks: 7, lowestScorer: 'Preeti', averageMarks: 70, passPercentage: 82 },
-                { subjectId: 's5', subjectName: 'Science', highestMarks: 24, highestScorer: 'Neha', lowestMarks: 8, lowestScorer: 'Ashok', averageMarks: 74, passPercentage: 88 }
-            ]
-        }
-    ];
+    // Details Modal State
+    const [showDetails, setShowDetails] = useState(false);
+    const [activeDetailInfo, setActiveDetailInfo] = useState<{
+        subjectName: string;
+        className: string;
+        examName: string;
+    } | null>(null);
 
     useEffect(() => {
         fetchClasses();
-        // Only fetch regular exam results here
         fetchResults({});
-    }, [fetchClasses, fetchResults]);
+        fetchWeeklyResults({});
+    }, [fetchClasses, fetchResults, fetchWeeklyResults]);
 
-    const handleFilter = () => {
+    const handleApplyExamFilters = () => {
         fetchResults({
             classId: selectedClass || undefined,
             examType: selectedExamType === 'ALL' ? undefined : (selectedExamType as any)
         });
     };
 
+    const handleApplyWeeklyFilters = () => {
+        fetchWeeklyResults({
+            classId: selectedWeekClass || undefined,
+            weekName: selectedWeek === 'ALL' ? undefined : selectedWeek
+        });
+    };
+
     // Determine which results to display and sort classes
-    const currentResults = [...(activeTab === 'exam' ? results : dummyWeeklyResults)].sort((a, b) => {
+    const currentResults = [...(activeTab === 'exam' ? results : weeklyResults)].sort((a, b) => {
         if (sortOrder === 'desc') {
             return b.averageMarks - a.averageMarks;
         } else {
@@ -89,13 +87,26 @@ export default function ResultsViewPage() {
     // Helper to sort subjects
     const sortSubjects = (subjects: any[]) => {
         return [...subjects].sort((a, b) => {
-            // Sort by Highest Marks
             if (sortOrder === 'desc') {
                 return b.highestMarks - a.highestMarks;
             } else {
                 return a.highestMarks - b.highestMarks;
             }
         });
+    };
+
+    const handleRowClick = async (result: any, sub: any) => {
+        // Extract original classId from the concatenated result.classId (examId-classId)
+        const actualClassId = result.classId.replace(`${result.examId}-`, '');
+
+        setActiveDetailInfo({
+            subjectName: sub.subjectName,
+            className: result.className.split(' - ')[0],
+            examName: result.className.split(' - ')[1] || (activeTab === 'weekly' ? 'Weekly Test' : 'Exam')
+        });
+
+        await fetchScores(result.examId, actualClassId, sub.subjectId, activeTab === 'weekly');
+        setShowDetails(true);
     };
 
     return (
@@ -145,12 +156,12 @@ export default function ResultsViewPage() {
                 </button>
             </div>
 
-            {activeTab === 'exam' && (
-                <Card className="border-none shadow-sm bg-muted/20">
-                    <CardContent className="p-4">
+            <Card className="border-none shadow-sm bg-muted/20">
+                <CardContent className="p-4">
+                    {activeTab === 'exam' ? (
                         <div className="flex flex-col md:flex-row gap-4 items-end">
-                            <div className="space-y-2 flex-1">
-                                <label className="text-sm font-medium">Class & Section</label>
+                            <div className="space-y-1 flex-1">
+                                <label className="text-xs font-bold uppercase text-muted-foreground">Class & Section</label>
                                 <select
                                     className="w-full h-10 px-3 rounded-md border bg-background"
                                     value={selectedClass}
@@ -162,8 +173,8 @@ export default function ResultsViewPage() {
                                     ))}
                                 </select>
                             </div>
-                            <div className="space-y-2 flex-1">
-                                <label className="text-sm font-medium">Exam Type</label>
+                            <div className="space-y-1 flex-1">
+                                <label className="text-xs font-bold uppercase text-muted-foreground">Exam Type</label>
                                 <select
                                     className="w-full h-10 px-3 rounded-md border bg-background"
                                     value={selectedExamType}
@@ -178,13 +189,46 @@ export default function ResultsViewPage() {
                                     <option value="SA2">SA 2</option>
                                 </select>
                             </div>
-                            <Button onClick={handleFilter} className="gap-2">
-                                <Filter className="h-4 w-4" /> Apply Filters
+                            <Button onClick={handleApplyExamFilters} className="px-8">
+                                Apply
                             </Button>
                         </div>
-                    </CardContent>
-                </Card>
-            )}
+                    ) : (
+                        <div className="flex flex-col md:flex-row gap-4 items-end">
+                            <div className="space-y-1 flex-1">
+                                <label className="text-xs font-bold uppercase text-muted-foreground">Class & Section</label>
+                                <select
+                                    className="w-full h-10 px-3 rounded-md border bg-background"
+                                    value={selectedWeekClass}
+                                    onChange={(e) => setSelectedWeekClass(e.target.value)}
+                                >
+                                    <option value="">All Classes</option>
+                                    {classes.map(cls => (
+                                        <option key={cls.id} value={cls.id}>{cls.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="space-y-1 flex-1">
+                                <label className="text-xs font-bold uppercase text-muted-foreground">Select Week</label>
+                                <select
+                                    className="w-full h-10 px-3 rounded-md border bg-background"
+                                    value={selectedWeek}
+                                    onChange={(e) => setSelectedWeek(e.target.value)}
+                                >
+                                    <option value="ALL">All Weeks</option>
+                                    <option value="Week 1">Week 1</option>
+                                    <option value="Week 2">Week 2</option>
+                                    <option value="Week 3">Week 3</option>
+                                    <option value="Week 4">Week 4</option>
+                                </select>
+                            </div>
+                            <Button onClick={handleApplyWeeklyFilters} className="px-8">
+                                Apply
+                            </Button>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 <div className="lg:col-span-1 space-y-6">
@@ -248,8 +292,17 @@ export default function ResultsViewPage() {
                                         </thead>
                                         <tbody className="divide-y">
                                             {sortSubjects(result.subjects).map((sub) => (
-                                                <tr key={sub.subjectId} className="hover:bg-muted/10 transition-colors">
-                                                    <td className="px-6 py-4 font-bold text-sm">{sub.subjectName}</td>
+                                                <tr
+                                                    key={sub.subjectId}
+                                                    className="hover:bg-primary/5 cursor-pointer transition-colors group"
+                                                    onClick={() => handleRowClick(result, sub)}
+                                                >
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex flex-col">
+                                                            <span className="font-bold text-sm group-hover:text-primary transition-colors">{sub.subjectName}</span>
+                                                            <span className="text-[10px] text-muted-foreground font-medium">Click to view all student marks</span>
+                                                        </div>
+                                                    </td>
                                                     <td className="px-6 py-4 text-center">
                                                         <span className="font-bold text-blue-600">{sub.averageMarks}%</span>
                                                     </td>
@@ -292,6 +345,78 @@ export default function ResultsViewPage() {
                     ))}
                 </div>
             </div>
+
+            {/* Student Details Dialog */}
+            <Dialog open={showDetails} onOpenChange={setShowDetails}>
+                <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col p-0">
+                    <DialogHeader className="p-6 pb-2">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+                                    {activeDetailInfo?.subjectName} Results
+                                    <Badge variant="outline" className="ml-2 bg-primary/10 text-primary border-none text-xs">
+                                        {activeTab === 'weekly' ? 'Weekly Result' : 'Exam'}
+                                    </Badge>
+                                </DialogTitle>
+                                <DialogDescription className="text-base mt-1">
+                                    Student performance for <span className="font-bold text-foreground">{activeDetailInfo?.className}</span> in <span className="font-bold text-foreground">{activeDetailInfo?.examName}</span>
+                                </DialogDescription>
+                            </div>
+                        </div>
+                    </DialogHeader>
+
+                    <div className="flex-1 overflow-y-auto px-6 pb-6">
+                        <div className="bg-muted/30 rounded-xl border overflow-hidden mt-4">
+                            <table className="w-full text-left">
+                                <thead className="bg-muted/50 text-muted-foreground text-[10px] uppercase font-bold sticky top-0">
+                                    <tr>
+                                        <th className="px-6 py-4">Roll No</th>
+                                        <th className="px-6 py-4">Student Name</th>
+                                        <th className="px-6 py-4 text-center">Marks</th>
+                                        <th className="px-6 py-4 text-center">Percentage</th>
+                                        <th className="px-6 py-4 text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y">
+                                    {currentScores.map((score) => (
+                                        <tr key={score.id} className="hover:bg-muted/20 transition-colors">
+                                            <td className="px-6 py-4 font-mono text-sm">{score.rollNo}</td>
+                                            <td className="px-6 py-4 font-bold text-sm">{score.studentName}</td>
+                                            <td className="px-6 py-4 text-center font-bold text-base">
+                                                {score.marks} / {score.maxMarks}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex flex-col items-center gap-1">
+                                                    <span className="text-sm font-bold text-primary">{score.percentage.toFixed(1)}%</span>
+                                                    <div className="w-20 h-1.5 bg-muted rounded-full overflow-hidden">
+                                                        <div
+                                                            className={`h-full ${score.percentage >= 75 ? 'bg-green-500' : score.percentage >= 40 ? 'bg-blue-500' : 'bg-red-500'}`}
+                                                            style={{ width: `${score.percentage}%` }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
+                                                <div className="flex justify-center">
+                                                    {score.status === 'Passed' ? (
+                                                        <Badge variant="success" className="gap-1 px-3">
+                                                            <CheckCircle2 className="h-3 w-3" /> Passed
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge variant="destructive" className="gap-1 px-3">
+                                                            <XCircle className="h-3 w-3" /> Failed
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

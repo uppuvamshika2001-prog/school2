@@ -1,6 +1,6 @@
 # 📚 School ERP - Production Codebase Documentation
 
-> **Last Updated:** January 5, 2026  
+> **Last Updated:** January 7, 2026  
 > **Version:** 1.1.0  
 > **Framework:** Next.js 14.0.4 (App Router)  
 > **Environment:** Production Ready
@@ -208,10 +208,11 @@ school-erp/
 └── page.tsx                  # Feedback Analysis Dashboard
 ```
 **Features:**
-- Feedback types: Positive, Neutral, Negative
+- Feedback types: Positive, Suggestion, Concern
 - Anonymous submission option
-- Status workflow: Pending → Reviewed → Resolved
-- Summary statistics
+- Role-based visibility: Analysis (Admin) vs Submission (Student/Parent)
+- Sentiment-based summary statistics
+- Clean, focused list view without status clutter
 
 ---
 
@@ -459,18 +460,11 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ---
 
-## 🔄 Recent Updates (v1.1.0)
-
-### New Modules Added
-- ✅ **Calendar Management** - Academic calendar with events
-- ✅ **Feedback Management** - Student/parent feedback system
-- ✅ **Library Management** - Physical + digital resources
-
-### Improvements
-- Enhanced sidebar navigation with nested menus
-- Professional typography (Plus Jakarta Sans, JetBrains Mono)
-- Clickable summary cards with filtering
-- Improved loading and empty states
+### Refinements (v1.2.0)
+- ✅ **UI Refinement** - Professional & simple design system update
+- ✅ **Simplified Feedback** - Removed status-based clutter and optimized for analysis
+- ✅ **Role Scaling** - Streamlined sidebar and actions based on user roles (Admin vs User)
+- ✅ **Enhanced Typography** - Unified font weights and hierarchy for readability
 
 ---
 

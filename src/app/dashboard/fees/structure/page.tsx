@@ -22,8 +22,16 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from '@/components/ui/dialog';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { X, CalendarDays, TrendingUp, Info } from 'lucide-react';
 
 const feeSchema = z.object({
     classId: z.string().min(1, 'Class is required'),
@@ -40,6 +48,7 @@ export default function FeeStructurePage() {
     const { structures, fetchStructures, addStructure, isLoading } = useFeeStore();
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [selectedViewStructure, setSelectedViewStructure] = useState<any | null>(null);
 
     const {
         register,
@@ -78,7 +87,7 @@ export default function FeeStructurePage() {
             tuitionFee: structure.categories.find((c: any) => c.category === 'Tuition')?.amount || 0,
             transportFee: structure.categories.find((c: any) => c.category === 'Transport')?.amount || 0,
             examinationFee: structure.categories.find((c: any) => c.category === 'Examination')?.amount || 0,
-            others: structure.categories.find((c: any) => c.category === 'Others' || c.category === 'Others')?.amount || 0,
+            others: structure.categories.find((c: any) => c.category === 'Others')?.amount || 0,
         });
     };
 
@@ -271,7 +280,7 @@ export default function FeeStructurePage() {
                                     </button>
                                     <button
                                         className="text-sm font-medium hover:bg-muted transition-colors"
-                                        onClick={() => toast.info(`Viewing details for ${structure.className}`)}
+                                        onClick={() => setSelectedViewStructure(structure)}
                                     >
                                         Details
                                     </button>
@@ -288,6 +297,83 @@ export default function FeeStructurePage() {
                     )}
                 </div>
             )}
+
+            {/* Structure Detail Dialog */}
+            <Dialog open={!!selectedViewStructure} onOpenChange={() => setSelectedViewStructure(null)}>
+                <DialogContent className="max-w-2xl p-0 overflow-hidden border-none rounded-2xl shadow-2xl">
+                    <DialogHeader className="p-8 bg-primary text-primary-foreground relative">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <Badge variant="secondary" className="mb-2 bg-white/20 text-white border-none">
+                                    Session {selectedViewStructure?.academicYear}
+                                </Badge>
+                                <DialogTitle className="text-3xl font-black">{selectedViewStructure?.className}</DialogTitle>
+                                <DialogDescription className="text-primary-foreground/80 mt-1 font-medium italic">
+                                    Annual Consolidated Fee Benchmark
+                                </DialogDescription>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-[10px] uppercase font-black tracking-widest opacity-60">Total Value</p>
+                                <p className="text-3xl font-black font-mono">₹{selectedViewStructure?.totalAmount.toLocaleString()}</p>
+                            </div>
+                        </div>
+                    </DialogHeader>
+
+                    <div className="p-8 space-y-8 bg-card">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="p-4 rounded-xl bg-muted/30 border border-dashed flex flex-col items-center text-center">
+                                <CalendarDays className="h-5 w-5 text-primary mb-2" />
+                                <p className="text-[10px] uppercase font-black text-muted-foreground">Monthly Avg</p>
+                                <p className="text-lg font-bold font-mono">₹{Math.round((selectedViewStructure?.totalAmount || 0) / 12).toLocaleString()}</p>
+                            </div>
+                            <div className="p-4 rounded-xl bg-muted/30 border border-dashed flex flex-col items-center text-center">
+                                <TrendingUp className="h-5 w-5 text-green-500 mb-2" />
+                                <p className="text-[10px] uppercase font-black text-muted-foreground">Tuition %</p>
+                                <p className="text-lg font-bold font-mono">
+                                    {Math.round(((selectedViewStructure?.categories.find((c: any) => c.category === 'Tuition')?.amount || 0) / (selectedViewStructure?.totalAmount || 1)) * 100)}%
+                                </p>
+                            </div>
+                            <div className="p-4 rounded-xl bg-muted/30 border border-dashed flex flex-col items-center text-center">
+                                <Info className="h-5 w-5 text-blue-500 mb-2" />
+                                <p className="text-[10px] uppercase font-black text-muted-foreground">Particulars</p>
+                                <p className="text-lg font-bold font-mono">{selectedViewStructure?.categories.length}</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground border-b pb-2">Fee Itemization Breakdown</h3>
+                            <div className="space-y-3">
+                                {selectedViewStructure?.categories.map((cat: any, i: number) => (
+                                    <div key={i} className="flex items-center justify-between p-4 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors group">
+                                        <div className="flex items-center gap-4">
+                                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center font-black text-primary text-xs">
+                                                {i + 1}
+                                            </div>
+                                            <div>
+                                                <p className="font-bold text-sm tracking-tight">{cat.category} Fee</p>
+                                                <p className="text-[10px] text-muted-foreground uppercase">{selectedViewStructure?.classId} Specification</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="font-black font-mono">₹{cat.amount.toLocaleString()}</p>
+                                            <p className="text-[9px] text-muted-foreground">Annual Billing Unit</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="pt-4 flex gap-4">
+                            <Button variant="outline" className="flex-1 h-12 gap-2" onClick={() => setSelectedViewStructure(null)}>
+                                Close View
+                            </Button>
+                            <Button className="flex-1 h-12 gap-2" onClick={() => { handleEdit(selectedViewStructure); setSelectedViewStructure(null); }}>
+                                <Save className="h-4 w-4" /> Edit Configuration
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

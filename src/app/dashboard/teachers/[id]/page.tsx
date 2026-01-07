@@ -84,7 +84,7 @@ export default function TeacherProfilePage() {
 
             {/* Tabs */}
             <Tabs defaultValue="overview" className="w-full" onValueChange={setActiveTab}>
-                <TabsList className="grid w-full md:w-[400px] grid-cols-3">
+                <TabsList className="grid w-full md:w-[500px] grid-cols-4">
                     <TabsTrigger value="overview">Overview</TabsTrigger>
                     <TabsTrigger value="classes">Classes</TabsTrigger>
                     <TabsTrigger value="timetable">Timetable</TabsTrigger>

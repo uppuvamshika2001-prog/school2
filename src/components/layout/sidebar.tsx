@@ -149,8 +149,8 @@ const navItems: NavItem[] = [
     icon: MessageSquare,
     roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'STUDENT', 'PARENT'],
     children: [
-      { label: 'Feedback Analysis', href: '/dashboard/feedback', icon: BarChart3 },
-      { label: 'Submit Feedback', href: '/dashboard/feedback/submit', icon: Send },
+      { label: 'Feedback Analysis', href: '/dashboard/feedback', icon: BarChart3, roles: ['SUPER_ADMIN', 'SCHOOL_ADMIN'] },
+      { label: 'Submit Feedback', href: '/dashboard/feedback/submit', icon: Send, roles: ['STUDENT', 'PARENT'] },
     ],
   },
 

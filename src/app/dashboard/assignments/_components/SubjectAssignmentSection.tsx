@@ -1,135 +1,156 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { Check, X, ClipboardList, BookOpen, Users } from 'lucide-react';
-import { toast } from 'sonner';
+import { BookOpen } from 'lucide-react';
+
+// Dummy data for subject allocations by class
+const classAllocations: Record<string, { subject: string; teacher: string; section: string }[]> = {
+    '1': [
+        { subject: 'English', teacher: 'Mary Wilson', section: 'A' },
+        { subject: 'Mathematics', teacher: 'John Davis', section: 'A' },
+        { subject: 'Environmental Science', teacher: 'Lisa Anderson', section: 'A' },
+        { subject: 'Hindi', teacher: 'Priya Sharma', section: 'A' },
+    ],
+    '2': [
+        { subject: 'English', teacher: 'Mary Wilson', section: 'A' },
+        { subject: 'Mathematics', teacher: 'John Davis', section: 'A' },
+        { subject: 'Environmental Science', teacher: 'Lisa Anderson', section: 'A' },
+        { subject: 'Hindi', teacher: 'Priya Sharma', section: 'B' },
+        { subject: 'Art', teacher: 'Rachel Green', section: 'B' },
+    ],
+    '3': [
+        { subject: 'English', teacher: 'Emily Brown', section: 'A' },
+        { subject: 'Mathematics', teacher: 'John Davis', section: 'A' },
+        { subject: 'Science', teacher: 'Lisa Anderson', section: 'B' },
+        { subject: 'Hindi', teacher: 'Priya Sharma', section: 'A' },
+        { subject: 'Social Studies', teacher: 'Michael Clark', section: 'B' },
+    ],
+    '4': [
+        { subject: 'English', teacher: 'Emily Brown', section: 'A' },
+        { subject: 'Mathematics', teacher: 'Sarah Johnson', section: 'A' },
+        { subject: 'Science', teacher: 'Robert Smith', section: 'B' },
+        { subject: 'Hindi', teacher: 'Priya Sharma', section: 'A' },
+        { subject: 'Social Studies', teacher: 'Michael Clark', section: 'B' },
+        { subject: 'Computer Science', teacher: 'David Lee', section: 'A' },
+    ],
+    '5': [
+        { subject: 'English', teacher: 'Emily Brown', section: 'A' },
+        { subject: 'Mathematics', teacher: 'Sarah Johnson', section: 'B' },
+        { subject: 'Science', teacher: 'Robert Smith', section: 'A' },
+        { subject: 'Hindi', teacher: 'Priya Sharma', section: 'B' },
+        { subject: 'Social Studies', teacher: 'Michael Clark', section: 'A' },
+        { subject: 'Computer Science', teacher: 'David Lee', section: 'B' },
+    ],
+    '6': [
+        { subject: 'English', teacher: 'Emily Brown', section: 'A' },
+        { subject: 'Mathematics', teacher: 'Sarah Johnson', section: 'A' },
+        { subject: 'Physics', teacher: 'Robert Smith', section: 'B' },
+        { subject: 'Chemistry', teacher: 'Dr. Amanda White', section: 'A' },
+        { subject: 'Biology', teacher: 'Lisa Anderson', section: 'B' },
+        { subject: 'Hindi', teacher: 'Priya Sharma', section: 'A' },
+        { subject: 'History', teacher: 'Michael Clark', section: 'B' },
+    ],
+    '7': [
+        { subject: 'English', teacher: 'Emily Brown', section: 'A' },
+        { subject: 'Mathematics', teacher: 'Sarah Johnson', section: 'B' },
+        { subject: 'Physics', teacher: 'Robert Smith', section: 'A' },
+        { subject: 'Chemistry', teacher: 'Dr. Amanda White', section: 'B' },
+        { subject: 'Biology', teacher: 'Lisa Anderson', section: 'A' },
+        { subject: 'Hindi', teacher: 'Priya Sharma', section: 'B' },
+        { subject: 'Geography', teacher: 'Michael Clark', section: 'A' },
+        { subject: 'Computer Science', teacher: 'David Lee', section: 'B' },
+    ],
+    '8': [
+        { subject: 'English', teacher: 'Emily Brown', section: 'A' },
+        { subject: 'Mathematics', teacher: 'Sarah Johnson', section: 'A' },
+        { subject: 'Physics', teacher: 'Robert Smith', section: 'B' },
+        { subject: 'Chemistry', teacher: 'Dr. Amanda White', section: 'A' },
+        { subject: 'Biology', teacher: 'Lisa Anderson', section: 'B' },
+        { subject: 'Hindi', teacher: 'Priya Sharma', section: 'A' },
+        { subject: 'History', teacher: 'Michael Clark', section: 'B' },
+        { subject: 'Computer Science', teacher: 'David Lee', section: 'A' },
+    ],
+    '9': [
+        { subject: 'English', teacher: 'Emily Brown', section: 'A' },
+        { subject: 'Mathematics', teacher: 'Sarah Johnson', section: 'B' },
+        { subject: 'Physics', teacher: 'Robert Smith', section: 'A' },
+        { subject: 'Chemistry', teacher: 'Dr. Amanda White', section: 'B' },
+        { subject: 'Biology', teacher: 'Lisa Anderson', section: 'A' },
+        { subject: 'Hindi', teacher: 'Priya Sharma', section: 'B' },
+        { subject: 'History', teacher: 'Michael Clark', section: 'A' },
+        { subject: 'Geography', teacher: 'James Taylor', section: 'B' },
+        { subject: 'Computer Science', teacher: 'David Lee', section: 'A' },
+    ],
+    '10': [
+        { subject: 'English', teacher: 'Emily Brown', section: 'A' },
+        { subject: 'Mathematics', teacher: 'Sarah Johnson', section: 'A' },
+        { subject: 'Physics', teacher: 'Robert Smith', section: 'B' },
+        { subject: 'Chemistry', teacher: 'Dr. Amanda White', section: 'A' },
+        { subject: 'Biology', teacher: 'Lisa Anderson', section: 'B' },
+        { subject: 'Hindi', teacher: 'Priya Sharma', section: 'A' },
+        { subject: 'History', teacher: 'Michael Clark', section: 'B' },
+        { subject: 'Geography', teacher: 'James Taylor', section: 'A' },
+        { subject: 'Computer Science', teacher: 'David Lee', section: 'B' },
+        { subject: 'Physical Education', teacher: 'Coach Williams', section: 'A' },
+    ],
+};
 
 export default function SubjectAssignmentSection() {
-    const [selectedClass, setSelectedClass] = useState('');
-    const [selectedSection, setSelectedSection] = useState('');
-    const [selectedSubject, setSelectedSubject] = useState('');
-    const [selectedTeacher, setSelectedTeacher] = useState('');
-
-    const handleAssign = () => {
-        if (!selectedClass || !selectedSection || !selectedSubject || !selectedTeacher) {
-            toast.error('Please fill all fields');
-            return;
-        }
-
-        toast.success('Subject assigned successfully');
-        setSelectedSubject('');
-    };
+    const [selectedClass, setSelectedClass] = useState('1');
+    const currentAllocations = classAllocations[selectedClass] || [];
 
     return (
-        <div className="grid grid-cols-1 xl:grid-cols-5 gap-8">
-            {/* Assignment Form */}
-            <div className="xl:col-span-2 space-y-6">
-                <Card className="border shadow-lg overflow-hidden">
-                    <CardHeader className="bg-primary/5 border-b">
-                        <CardTitle className="flex items-center gap-2">
-                            <ClipboardList className="w-5 h-5 text-primary" />
-                            New Subject Allocation
-                        </CardTitle>
-                        <CardDescription>Link a teacher to a specific subject and class</CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-6 space-y-5">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label className="font-bold">Academic Class</Label>
-                                <Select value={selectedClass} onValueChange={setSelectedClass}>
-                                    <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Select Class" /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="10">Class 10</SelectItem>
-                                        <SelectItem value="9">Class 9</SelectItem>
-                                        <SelectItem value="8">Class 8</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="font-bold">Section</Label>
-                                <Select value={selectedSection} onValueChange={setSelectedSection}>
-                                    <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Select Section" /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="A">Section A</SelectItem>
-                                        <SelectItem value="B">Section B</SelectItem>
-                                        <SelectItem value="C">Section C</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label className="font-bold">Subject / Course</Label>
-                            <Select value={selectedSubject} onValueChange={setSelectedSubject}>
-                                <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Select Subject" /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="math">Mathematics</SelectItem>
-                                    <SelectItem value="phy">Physics</SelectItem>
-                                    <SelectItem value="eng">English</SelectItem>
-                                    <SelectItem value="hist">History</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label className="font-bold">Assign Teacher</Label>
-                            <Select value={selectedTeacher} onValueChange={setSelectedTeacher}>
-                                <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Select Teacher" /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="tch-1">Sarah Johnson (Math)</SelectItem>
-                                    <SelectItem value="tch-2">Robert Smith (Physics)</SelectItem>
-                                    <SelectItem value="tch-3">Emily Brown (English)</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <Button
-                            className="w-full h-11 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all gap-2"
-                            onClick={handleAssign}
-                        >
-                            <Check className="h-5 w-5" />
-                            Confirm Assignment
-                        </Button>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Current Assignments Preview */}
-            <div className="xl:col-span-3 space-y-6">
-                <Card className="border shadow-lg">
-                    <CardHeader className="bg-muted/30 border-b">
-                        <CardTitle className="text-lg font-bold flex items-center gap-2">
-                            <Users className="w-5 h-5 text-muted-foreground" />
-                            Active Subject Allocations
-                        </CardTitle>
-                        <CardDescription>Recently updated teacher-subject links</CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {[1, 2, 3, 4].map((i) => (
-                                <div key={i} className="group flex items-center justify-between p-4 border rounded-2xl bg-card hover:border-primary/50 hover:bg-primary/5 transition-all">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                                            <BookOpen className="w-5 h-5" />
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-sm">Mathematics</p>
-                                            <p className="text-xs text-muted-foreground font-medium">Class 10-A • Sarah Johnson</p>
-                                        </div>
-                                    </div>
-                                    <Button variant="ghost" size="icon" className="h-9 w-9 text-rose-500 hover:bg-rose-50 hover:text-rose-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <X className="h-4 w-4" />
-                                    </Button>
-                                </div>
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b">
+                <CardTitle className="text-lg font-semibold">
+                    Active Subject Allocations
+                </CardTitle>
+                <Select value={selectedClass} onValueChange={setSelectedClass}>
+                    <SelectTrigger className="w-[130px]">
+                        <SelectValue placeholder="Select Class" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((classNum) => (
+                            <SelectItem key={classNum} value={classNum.toString()}>
+                                Class {classNum}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </CardHeader>
+            <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                    <table className="w-full">
+                        <thead>
+                            <tr className="border-b bg-muted/40">
+                                <th className="h-12 px-4 text-left text-sm font-medium text-muted-foreground w-16">#</th>
+                                <th className="h-12 px-4 text-left text-sm font-medium text-muted-foreground">Subject</th>
+                                <th className="h-12 px-4 text-left text-sm font-medium text-muted-foreground w-28">Section</th>
+                                <th className="h-12 px-4 text-left text-sm font-medium text-muted-foreground">Teacher</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {currentAllocations.map((allocation, idx) => (
+                                <tr key={idx} className="border-b last:border-0 hover:bg-muted/20">
+                                    <td className="h-14 px-4 text-sm text-muted-foreground">{idx + 1}</td>
+                                    <td className="h-14 px-4 text-sm font-medium">{allocation.subject}</td>
+                                    <td className="h-14 px-4 text-sm">{allocation.section}</td>
+                                    <td className="h-14 px-4 text-sm">{allocation.teacher}</td>
+                                </tr>
                             ))}
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-        </div>
+                        </tbody>
+                    </table>
+                </div>
+
+                {currentAllocations.length === 0 && (
+                    <div className="text-center py-12 text-muted-foreground">
+                        <BookOpen className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                        <p className="text-sm">No subject allocations found for this class.</p>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
     );
 }

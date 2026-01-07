@@ -57,6 +57,7 @@ const MOCK_STUDENT_FEES: StudentFeeStatus[] = [
     {
         studentId: 'st-1',
         studentName: 'Arjun Sharma',
+        admissionNumber: '2024-AD-001',
         rollNo: '10A001',
         classId: 'cls-10',
         className: 'Class 10-A',
@@ -69,6 +70,7 @@ const MOCK_STUDENT_FEES: StudentFeeStatus[] = [
     {
         studentId: 'st-2',
         studentName: 'Priya Patel',
+        admissionNumber: '2024-AD-002',
         rollNo: '10A002',
         classId: 'cls-10',
         className: 'Class 10-A',
@@ -81,6 +83,7 @@ const MOCK_STUDENT_FEES: StudentFeeStatus[] = [
     {
         studentId: 'st-3',
         studentName: 'Rahul Kumar',
+        admissionNumber: '2024-AD-003',
         rollNo: '10A003',
         classId: 'cls-10',
         className: 'Class 10-A',
@@ -92,6 +95,7 @@ const MOCK_STUDENT_FEES: StudentFeeStatus[] = [
     {
         studentId: 'st-4',
         studentName: 'Amit Singh',
+        admissionNumber: '2024-AD-004',
         rollNo: '09A001',
         classId: 'cls-9',
         className: 'Class 9-A',

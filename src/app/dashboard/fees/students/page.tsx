@@ -170,24 +170,6 @@ export default function StudentFeesPage() {
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex justify-end gap-1">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 text-blue-600 hover:bg-blue-50"
-                                                    onClick={() => handleAction('mail', s.studentName)}
-                                                    title="Send Reminder"
-                                                >
-                                                    <Mail className="h-4 w-4" />
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 text-green-600 hover:bg-green-50"
-                                                    onClick={() => handleAction('pay', s.studentName)}
-                                                    title="Collect Payment"
-                                                >
-                                                    <IndianRupee className="h-4 w-4" />
-                                                </Button>
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
                                                         <Button variant="ghost" size="icon" className="h-8 w-8">

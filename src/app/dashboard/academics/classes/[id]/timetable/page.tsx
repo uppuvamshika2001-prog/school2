@@ -4,9 +4,19 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useClassStore } from '@/stores/class.store';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import {
     Printer,
     Download,
@@ -22,15 +32,60 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { TimetableEntry } from '@/types/class.types';
+import { toast } from 'sonner';
 
 const DAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'] as const;
 const PERIODS = [1, 2, 3, 4, 5, 6, 7, 8];
+
+const SUBJECTS = [
+    { id: 'math', name: 'Mathematics' },
+    { id: 'physics', name: 'Physics' },
+    { id: 'chemistry', name: 'Chemistry' },
+    { id: 'biology', name: 'Biology' },
+    { id: 'english', name: 'English' },
+    { id: 'hindi', name: 'Hindi' },
+    { id: 'history', name: 'History' },
+    { id: 'geography', name: 'Geography' },
+    { id: 'computer', name: 'Computer Science' },
+    { id: 'pe', name: 'Physical Education' },
+];
+
+const TEACHERS = [
+    { id: 'tch-1', name: 'Sarah Johnson' },
+    { id: 'tch-2', name: 'Robert Smith' },
+    { id: 'tch-3', name: 'Emily Brown' },
+    { id: 'tch-4', name: 'Dr. Amanda White' },
+    { id: 'tch-5', name: 'Michael Clark' },
+    { id: 'tch-6', name: 'David Lee' },
+];
+
+const PERIOD_TIMES: Record<number, { start: string; end: string }> = {
+    1: { start: '09:00', end: '09:45' },
+    2: { start: '10:00', end: '10:45' },
+    3: { start: '11:00', end: '11:45' },
+    4: { start: '12:00', end: '12:45' },
+    5: { start: '13:00', end: '13:45' },
+    6: { start: '14:00', end: '14:45' },
+    7: { start: '15:00', end: '15:45' },
+    8: { start: '16:00', end: '16:45' },
+};
 
 export default function ClassTimetableView() {
     const { id } = useParams();
     const router = useRouter();
     const { selectedClass, timetable, isLoading, fetchClassById, fetchTimetable } = useClassStore();
     const [selectedSection, setSelectedSection] = useState<string>('');
+    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+    const [localTimetable, setLocalTimetable] = useState<TimetableEntry[]>([]);
+
+    const [newEntry, setNewEntry] = useState({
+        dayOfWeek: '' as typeof DAYS[number] | '',
+        period: 0,
+        subjectId: '',
+        teacherId: '',
+        roomNo: '',
+    });
 
     useEffect(() => {
         if (id) fetchClassById(id as string);
@@ -48,8 +103,72 @@ export default function ClassTimetableView() {
         }
     }, [id, selectedSection, fetchTimetable]);
 
+    useEffect(() => {
+        setLocalTimetable(timetable);
+    }, [timetable]);
+
     const getEntry = (day: string, period: number) => {
-        return timetable.find(entry => entry.dayOfWeek === day && entry.period === period);
+        return localTimetable.find(entry => entry.dayOfWeek === day && entry.period === period);
+    };
+
+    const handleAddPeriod = () => {
+        if (!newEntry.dayOfWeek || !newEntry.period || !newEntry.subjectId || !newEntry.teacherId) {
+            toast.error('Please fill all required fields');
+            return;
+        }
+
+        // Check if slot is already occupied
+        const existingEntry = getEntry(newEntry.dayOfWeek, newEntry.period);
+        if (existingEntry) {
+            toast.error('This time slot is already occupied');
+            return;
+        }
+
+        const subject = SUBJECTS.find(s => s.id === newEntry.subjectId);
+        const teacher = TEACHERS.find(t => t.id === newEntry.teacherId);
+        const periodTime = PERIOD_TIMES[newEntry.period];
+
+        const newTimetableEntry: TimetableEntry = {
+            id: `tt-${Date.now()}`,
+            dayOfWeek: newEntry.dayOfWeek as typeof DAYS[number],
+            period: newEntry.period,
+            startTime: periodTime.start,
+            endTime: periodTime.end,
+            subjectId: newEntry.subjectId,
+            subjectName: subject?.name || '',
+            teacherId: newEntry.teacherId,
+            teacherName: teacher?.name || '',
+            classId: id as string,
+            sectionId: selectedSection,
+            roomNo: newEntry.roomNo || '101',
+        };
+
+        setLocalTimetable(prev => [...prev, newTimetableEntry]);
+        toast.success('Period added successfully');
+
+        // Reset form
+        setNewEntry({
+            dayOfWeek: '',
+            period: 0,
+            subjectId: '',
+            teacherId: '',
+            roomNo: '',
+        });
+        setIsAddDialogOpen(false);
+    };
+
+    const handleCellClick = (day: typeof DAYS[number], period: number) => {
+        const entry = getEntry(day, period);
+        if (!entry) {
+            setNewEntry({
+                dayOfWeek: day,
+                period: period,
+                subjectId: '',
+                teacherId: '',
+                roomNo: '',
+            });
+            setIsAddDialogOpen(true);
+        }
     };
 
     if (!selectedClass) return null;
@@ -95,7 +214,12 @@ export default function ClassTimetableView() {
                         </SelectContent>
                     </Select>
                     <div className="ml-auto">
-                        <Button variant="outline" size="sm" className="gap-2 bg-background border-dashed">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2 bg-background border-dashed"
+                            onClick={() => setIsAddDialogOpen(true)}
+                        >
                             <Plus className="h-4 w-4" /> Add Period
                         </Button>
                     </div>
@@ -119,7 +243,9 @@ export default function ClassTimetableView() {
                             <tr key={period} className="hover:bg-muted/20 transition-colors">
                                 <td className="p-4 border-b border-r font-medium text-center">
                                     <div className="text-sm text-primary">P{period}</div>
-                                    <div className="text-[10px] text-muted-foreground mt-1">09:00 - 09:45</div>
+                                    <div className="text-[10px] text-muted-foreground mt-1">
+                                        {PERIOD_TIMES[period].start} - {PERIOD_TIMES[period].end}
+                                    </div>
                                 </td>
                                 {DAYS.map(day => {
                                     const entry = getEntry(day, period);
@@ -144,7 +270,10 @@ export default function ClassTimetableView() {
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <div className="h-full min-h-[80px] rounded-lg border border-dashed border-muted flex items-center justify-center group hover:border-primary/50 cursor-pointer transition-all">
+                                                <div
+                                                    className="h-full min-h-[80px] rounded-lg border border-dashed border-muted flex items-center justify-center group hover:border-primary/50 cursor-pointer transition-all"
+                                                    onClick={() => handleCellClick(day, period)}
+                                                >
                                                     <Plus className="h-4 w-4 text-muted-foreground group-hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                                                 </div>
                                             )}
@@ -163,9 +292,113 @@ export default function ClassTimetableView() {
                         <h4 className="font-semibold">Timetable Compliance</h4>
                         <p className="text-sm text-muted-foreground">All mandatory subjects for Class {selectedClass.name} have been scheduled.</p>
                     </div>
-                    <Badge variant="success" className="px-4 py-1">Fully Scheduled</Badge>
+                    <Badge variant="secondary" className="px-4 py-1">Fully Scheduled</Badge>
                 </CardContent>
             </Card>
+
+            {/* Add Period Dialog */}
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Add New Period</DialogTitle>
+                        <DialogDescription>
+                            Add a new period to the timetable for {selectedClass.name}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Day</Label>
+                                <Select
+                                    value={newEntry.dayOfWeek}
+                                    onValueChange={(v) => setNewEntry({ ...newEntry, dayOfWeek: v as typeof DAYS[number] })}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select day" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {DAYS.map(day => (
+                                            <SelectItem key={day} value={day}>
+                                                {day.charAt(0) + day.slice(1).toLowerCase()}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Period</Label>
+                                <Select
+                                    value={newEntry.period ? newEntry.period.toString() : ''}
+                                    onValueChange={(v) => setNewEntry({ ...newEntry, period: parseInt(v) })}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select period" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {PERIODS.map(p => (
+                                            <SelectItem key={p} value={p.toString()}>
+                                                P{p} ({PERIOD_TIMES[p].start})
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Subject</Label>
+                            <Select
+                                value={newEntry.subjectId}
+                                onValueChange={(v) => setNewEntry({ ...newEntry, subjectId: v })}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select subject" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {SUBJECTS.map(subject => (
+                                        <SelectItem key={subject.id} value={subject.id}>
+                                            {subject.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Teacher</Label>
+                            <Select
+                                value={newEntry.teacherId}
+                                onValueChange={(v) => setNewEntry({ ...newEntry, teacherId: v })}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select teacher" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {TEACHERS.map(teacher => (
+                                        <SelectItem key={teacher.id} value={teacher.id}>
+                                            {teacher.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Room Number (Optional)</Label>
+                            <Input
+                                value={newEntry.roomNo}
+                                onChange={(e) => setNewEntry({ ...newEntry, roomNo: e.target.value })}
+                                placeholder="e.g., 101"
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleAddPeriod}>
+                            Add Period
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

@@ -28,6 +28,7 @@ export interface ClassFeeSummary {
 export interface StudentFeeStatus {
     studentId: string;
     studentName: string;
+    admissionNumber: string;
     rollNo: string;
     classId: string;
     className: string;
@@ -42,6 +43,7 @@ export interface PaymentTransaction {
     id: string;
     studentId: string;
     studentName: string;
+    admissionNumber: string;
     amount: number;
     category: FeeCategory;
     method: 'Cash' | 'Card' | 'UPI' | 'Net Banking';
