@@ -25,6 +25,7 @@ import { Badge } from '@/components/ui/badge';
 import { useCalendarStore } from '@/stores/calendar.store';
 import { CalendarEvent, EventType } from '@/types/calendar.types';
 import { toast } from 'sonner';
+import { useIsSuperAdmin } from '@/stores/auth.store';
 
 // Event type configuration
 const eventTypeConfig: Record<EventType, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
@@ -91,6 +92,7 @@ export default function CalendarPage() {
         setSelectedDate
     } = useCalendarStore();
 
+    const isSuperAdmin = useIsSuperAdmin();
     const [typeFilter, setTypeFilter] = useState<EventType | ''>('');
 
     useEffect(() => {
@@ -174,12 +176,14 @@ export default function CalendarPage() {
                     <Button variant="outline" onClick={() => setMonth(today.getMonth(), today.getFullYear())}>
                         Today
                     </Button>
-                    <Button className="gap-2" asChild>
-                        <Link href="/dashboard/calendar/create">
-                            <Plus className="w-4 h-4" />
-                            Add Event
-                        </Link>
-                    </Button>
+                    {!isSuperAdmin && (
+                        <Button className="gap-2" asChild>
+                            <Link href="/dashboard/calendar/create">
+                                <Plus className="w-4 h-4" />
+                                Add Event
+                            </Link>
+                        </Button>
+                    )}
                 </div>
             </div>
 
